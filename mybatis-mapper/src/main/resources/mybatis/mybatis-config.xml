@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+<!-- 步骤一：配置数据源 -->
+    <!-- 设置数据源的方式： -->
+    <!-- 第一种，通过properties子元素配置变量，然后在下文environment节点中引用这些变量 -->
+    <properties>
+        <property name="driver" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/mybatis?serverTimezone=UTC&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false&amp;allowMultiQueries=true"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </properties>
+
+    <!-- 和spring整合后，将被废除 -->
+    <environments default="development">
+        <environment id="development">
+            <!-- 数据库事物管理 -->
+            <transactionManager type="JDBC"/>
+            <!-- 数据库连接池 -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 第二种，通过properties的属性配置，引用配置文件 -->
+    <!-- <properties resource="jdbc.properties"/> -->
+
+    <!-- 第三种，通过属性参数传递配置，在代码中实现 -->
+    <!-- 优先级：第三种 >> 第二种 >> 第一种 -->
+
+<!-- 配置数据源完毕-->
+
+
+    <mappers>
+        <mapper resource="mapper/UserMapper.xml"/>
+    </mappers>
+
+</configuration>

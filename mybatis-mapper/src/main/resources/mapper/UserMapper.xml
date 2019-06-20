@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间：
+     在Mapper代理的方式中，是mapper接口的类路径 -->
+<mapper namespace="com.mybatis.mapper.service.UserService">
+
+    <!-- 在映射文件中配置sql语句 -->
+    <!-- 通过selec执行数据查询
+        id：标识映射文件中的sql，成为statement的id，
+        将sql语句封装到mapperStatement对象中
+    -->
+    <select id="findUserById" parameterType="int" resultType="com.mybatis.mapper.domain.UserInfo">
+        SELECT *
+        FROM user_info
+        WHERE id = #{id}
+    </select>
+
+    <select id="findUserByName" parameterType="string" resultType="com.mybatis.mapper.domain.UserInfo">
+        SELECT *
+        FROM user_info
+        WHERE name LIKE CONCAT('%',#{value},'%')
+    </select>
+
+    <insert id="insertUserInfo" parameterType="com.mybatis.mapper.domain.UserInfo">
+        INSERT INTO user_info(name, birth, sex, mobile, mail)
+        VALUES (#{name}, #{birth}, #{sex}, #{mobile}, #{mail})
+    </insert>
+
+    <delete id="deleteUserInfo" parameterType="int">
+        DELETE
+        FROM user_info
+        WHERE id = #{id}
+    </delete>
+
+    <update id="updateUserInfo" parameterType="com.mybatis.mapper.domain.UserInfo">
+        UPDATE user_info
+        SET name=#{name},
+            birth=#{birth},
+            sex=#{sex},
+            mobile=#{mobile},
+            mail=#{mail}
+        WHERE id = #{id}
+    </update>
+</mapper>
