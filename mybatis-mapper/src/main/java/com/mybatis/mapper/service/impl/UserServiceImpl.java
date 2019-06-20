@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
         SqlSession session = sqlSessionFactory.openSession();
         UserService mapper = session.getMapper(UserService.class);
         mapper.insertUserInfo(userInfo);
+        session.commit();
         session.close();
     }
 
@@ -50,6 +51,7 @@ public class UserServiceImpl implements UserService {
         SqlSession session = sqlSessionFactory.openSession();
         UserService mapper = session.getMapper(UserService.class);
         mapper.deleteUserInfo(id);
+        session.commit();
         session.close();
     }
 
@@ -57,6 +59,7 @@ public class UserServiceImpl implements UserService {
         SqlSession session = sqlSessionFactory.openSession();
         UserService mapper = session.getMapper(UserService.class);
         mapper.updateUserInfo(userInfo);
+        session.commit();
         session.close();
     }
 }

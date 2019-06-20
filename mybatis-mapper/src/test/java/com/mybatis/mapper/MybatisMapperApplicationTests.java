@@ -71,12 +71,13 @@ public class MybatisMapperApplicationTests {
         //创建UserDao对象
         UserService userDao = new UserServiceImpl(sqlSessionFactory);
         UserInfo user = new UserInfo();
-        user.setName("DannyHoo");
+        user.setName("代理");
         user.setBirth("19940113");
         user.setSex("男");
         user.setMobile("18978985632");
         user.setMail("123456@qq.com");
         userDao.insertUserInfo(user);
+        System.out.println("user_id:" + user.getId());
     }
 
     /**
