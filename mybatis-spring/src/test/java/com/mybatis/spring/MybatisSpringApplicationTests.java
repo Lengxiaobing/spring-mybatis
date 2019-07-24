@@ -1,7 +1,7 @@
-package com.mybatis.mapper;
+package com.mybatis.spring;
 
-import com.mybatis.mapper.domain.UserInfo;
-import com.mybatis.mapper.service.UserService;
+import com.mybatis.spring.domain.UserInfo;
+import com.mybatis.spring.service.UserService;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class MybatisMapperApplicationTests {
+public class MybatisSpringApplicationTests {
 
     /**
      * 会话工厂

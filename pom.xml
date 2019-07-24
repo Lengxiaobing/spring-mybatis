@@ -11,6 +11,7 @@
     <modules>
         <module>mybatis-dao</module>
         <module>mybatis-mapper</module>
+        <module>mybatis-spring</module>
     </modules>
 
     <properties>

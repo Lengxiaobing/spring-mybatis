@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     public int updateUserInfo(UserInfo userInfo) throws Exception {
         SqlSession session = sqlSessionFactory.openSession();
-        int update = session.update("user.updateUserInfo", userInfo);        session.commit();
+        int update = session.update("user.updateUserInfo", userInfo);
         session.commit();
         session.close();
         return update;
