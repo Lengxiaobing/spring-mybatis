@@ -287,3 +287,29 @@ MyBatis 会加载不带 `databaseId` 属性和带有匹配当前数据库 `datab
 - **`${}`**：是字符串替换；
 - **`#{}`**：可以有效的防止SQL注入，提高系统安全性。
 
+## 输入映射
+
+- 传递简单类型
+
+- 传递pojo对象
+
+- 传递pojo包装类型
+
+- 传递HashMap
+
+## 输出映射
+
+- **resultType**
+- 使用resultType进行输出映射时，只有查询出来的列名和pojo中的属性名一致，该列才可以映射成功。
+  - 如果结果只有一条并只有一列，可以使用简单类型进行输出映射
+- 输出pojo单个对象或者pojo集合列表时，resultType指定的输出类型是一样的，但是返回值类型不同。
+  - 输出类型为hashmap时，将输出的字段名称作为map的key，字段值作为value，多条时为List<HashMap<k,v>>。
+
+**`注意`**：生成的动态代理对象是根据mapper方法的返回值类型，确定是调用selectOne还是selectList。
+
+- resultMap
+
+  - 查询出来的列名和pojo的属性名不一致时，通过定义一个resultMap对列名和属性名之间作一个映射关系。
+
+**`注意`**：如果resultMap在不同的namespace中，使用时需要在上namespace
+
