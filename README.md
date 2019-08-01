@@ -315,3 +315,254 @@ MyBatis 会加载不带 `databaseId` 属性和带有匹配当前数据库 `datab
 
 **`注意`**：如果resultMap在不同的namespace中，使用时需要在上namespace
 
+## 动态SQL
+
+> MyBatis 的强大特性之一便是它的动态 SQL。动态 SQL 元素和 JSTL 或基于类似 XML 的文本处理器相似。MyBatis 采用功能强大的基于 OGNL 的表达式来淘汰其它大部分元素。
+
+动态SQL元素：
+
+- if
+- choose (when, otherwise)
+- trim (where, set)
+- foreach
+
+### if
+
+> 动态 SQL 通常要做的事情是根据条件包含 where 子句的一部分。比如：
+
+```xml
+<select id="findActiveBlogWithTitleLike"
+     resultType="Blog">
+  SELECT * FROM BLOG
+  WHERE state = ‘ACTIVE’
+  <if test="title != null">
+    AND title like #{title}
+  </if>
+</select>
+```
+
+### choose, when, otherwise
+
+> 有时不想应用到所有的条件语句，而只想从中择其一项。针对这种情况，MyBatis 提供了 choose 元素，它有点像 Java 中的 switch 语句。
+
+```xml
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG WHERE state = ‘ACTIVE’
+  <choose>
+    <when test="title != null">
+      AND title like #{title}
+    </when>
+    <when test="author != null and author.name != null">
+      AND author_name like #{author.name}
+    </when>
+    <otherwise>
+      AND featured = 1
+    </otherwise>
+  </choose>
+</select>
+```
+
+### trim, where, set
+
+- **where**
+
+> where 元素只会在有if条件满足的情况下才会生成“WHERE”子句。并且，若语句的开头为“AND”或“OR”，where元素会自动去除。
+
+```xml
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG
+  <where>
+    <if test="state != null">
+         state = #{state}
+    </if>
+    <if test="title != null">
+        AND title like #{title}
+    </if>
+    <if test="author != null and author.name != null">
+        AND author_name like #{author.name}
+    </if>
+  </where>
+</select>
+```
+
+- **trim**
+
+> trim 元素可以用来定制元素功能。它的作用是移除prefixOverrides 属性中指定的内容，并且插入prefix 属性中指定的内容。（类似于替换功能）
+
+```xml
+<trim prefix="WHERE" prefixOverrides="AND |OR ">
+  ...
+</trim>
+```
+
+- **set**
+
+> set元素会动态前置 SET 关键字，同时也会删掉无用的逗号。因为用了条件语句之后很可能就会在生成的 SQL 语句的后面留下逗号。
+
+```xml
+<update id="updateAuthorIfNecessary">
+  update Author
+    <set>
+      <if test="username != null">username=#{username},</if>
+      <if test="password != null">password=#{password},</if>
+      <if test="email != null">email=#{email},</if>
+      <if test="bio != null">bio=#{bio}</if>
+    </set>
+  where id=#{id}
+</update>
+```
+
+### foreach
+
+> 动态 SQL 的另外一个常用的操作需求是对一个集合进行遍历，通常是在构建 IN 条件语句的时候。
+
+```xml
+<select id="selectPostIn" resultType="domain.blog.Post">
+  SELECT *
+  FROM POST P
+  WHERE ID in
+  <foreach item="item" index="index" collection="list"
+      open="(" separator="," close=")">
+        #{item}
+  </foreach>
+</select>
+```
+
+foreach元素的功能非常强大，它允许指定一个集合，声明可以在元素体内使用的集合项（item）和索引（index）变量。它也允许指定开头(open)与结尾(close)的字符串以及在迭代结果（separator）之间放置分隔符。
+
+**注意** 可以将任何可迭代对象（如 List、Set 等）、Map 对象或者数组对象传递给 foreach 作为集合参数。当使用可迭代对象或者数组时，index 是当前迭代的次数，item 的值是本次迭代获取的元素。当使用 Map 对象（或者 Map.Entry 对象的集合）时，index 是键，item 是值。
+
+## 高级映射
+
+### 一对一查询
+
+**resultType方式**
+
+```xml
+<select id="findOrdersList" resultType="cn.itcast.mybatis.po.OrdersCustom">    
+    SELECT    
+        orders.*,    
+        user.username,    
+        user.address
+    FROM    
+    	orders,user    
+    WHERE orders.user_id = user.id
+</select>
+```
+
+**resultMap方式**
+
+```xml
+<resultMap type="cn.itcast.mybatis.po.Orders"id="userOrderMap">
+    <id property="id" column="id"/>
+    <result property="user_id" column="user_id"/>
+    <result property="number" column="number"/>
+    <association property="user" javaType="cn.itcast.mybatis.po.User">
+        <id property="id" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="address" column="address"/>
+    </association>
+</resultMap>
+```
+
+**总结**：
+
+- **resultType**
+
+  - 使用resultType实现较为简单，如果pojo中没有包括查询出来的列名，只需增加列名对应的属性，即可完成映射。
+
+  - 如果查询结果没有特殊的要求建议使用resultType。
+- **resultMap**
+
+  - 实现有点麻烦，需要单独定义resultMap，如果对查询结果有特殊的要求，可以使用resultMap将查询到的列名，映射到关联的pojo属性中。
+
+**`注意`**：resultMap可以实现延迟加载，resultType无法实现延迟加载。
+
+### 一对多查询
+
+**resultMap方式**
+
+```xml
+<resultMap　type="cn.itcast.mybatis.po.Orders"　id="userorderdetailmap">    
+　　<id property="id"column="id"/>    
+　　<result property="user_id" column="user_id"/>    
+　　<result property="number" column="number"/>    
+　　<association property="user" javaType="cn.itcast.mybatis.po.User">    
+　　　　<id property="id" column="user_id"/>    
+　　　　<result property="username" column="username"/>    
+　　　　<result property="address" column="address"/>    
+　　</association>    
+　　<collection　property="orderdetails" ofType="cn.itcast.mybatis.po.Orderdetail">    
+　　　　<id property="id" column="orderdetail_id"/>    
+　　　　<result property="items_id" column="items_id"/>    
+　　　　<result property="items_num" column="items_num"/>    
+	</collection>    
+</resultMap>
+```
+
+**总结**：
+
+- 使用resultMap的association属性，可以将关联查询信息映射到一个pojo对象中。
+
+- 使用resultMap的collection属性，可以将关联查询到的多条记录映射到一个集合属性中。
+- resultMap具有继承特性，可以继承已定义的resultMap。
+
+- 使用resultType实现：需要自己处理，使用双重循环遍历，去掉重复记录，将查询到的多条记录放到集合属性中。
+
+### 多对多查询
+
+**resultMap方式**
+
+```xml
+<resultMap type="cn.itcast.mybatis.po.User"id="userOrderListResultMap">    
+       <id column="user_id"property="id"/>    
+       <result column="username"property="username"/>    
+       <collection property="orders"ofType="cn.itcast.mybatis.po.Orders">    
+          <id  column="id"property="id"/>    
+          <result property="number" column="number"/>    
+          <collection property="orderdetails"ofType="cn.itcast.mybatis.po.Orderdetail">    
+               <id  column="orderdetail_id" property="id"/>    
+               <result property="ordersId"column="id"/>    
+               <result property="itemsId"column="items_id"/>    
+               <result property="itemsNum"column="items_num"/>    
+               <association property="items"javaType="cn.itcast.mybatis.po.Items">    
+                   <id column="items_id" property="id"/>    
+                   <result column="items_name" property="name"/>    
+                   <result column="items_detail" property="detail"/>    
+              </association>    
+         </collection>    
+     </collection>    
+</resultMap>  
+```
+
+**总结**：
+
+- 使用collection和association分别对集合和实体进行关联映射，它们层层嵌套的方式，就跟实体之间层层嵌套的方式一样。
+
+## 延时加载
+
+先从单表查询、需要时再从关联表去关联查询，大大提高数据库性能，因为查询单表要比关联查询多张表速度要快。
+
+## 查询缓存
+
+### 一级缓存
+
+一级缓存是SqlSession级别的缓存。在操作数据库时需要构造 sqlSession对象，在对象中有一个(内存区域)数据结构（HashMap）用于存储缓存数据。不同的sqlSession之间的缓存数据区域是互不影响的。
+
+一级缓存的作用域是同一个SqlSession，在同一个sqlSession中多次执行相同的sql语句时，第一次执行完会将查询到的数据写入缓存（内存），下次会从缓存中获取数据，将不再从数据库查询，从而提高查询效率。当一个sqlSession结束后，该sqlSession中的一级缓存也就不存在了。Mybatis默认开启一级缓存。
+
+如果sqlSession去执行commit操作（插入、更新、删除），将会清空SqlSession中的一级缓存，这样做的目的为了让缓存中存储的是最新的信息，避免脏读。
+
+**`注意`**：将mybatis和spring进行整合开发时，事务控制在service中。一个service方法中包括很多mapper方法调用。如果是执行两次service调用查询，不走一级缓存，因为Service方法结束，sqlSession就关闭，一级缓存就清空。
+
+### 二级缓存
+
+二级缓存是mapper级别的缓存，多个SqlSession去操作同一个Mapper的sql语句时，查询到的数据会存在二级缓存区域，多个SqlSession可以共用二级缓存，二级缓存是跨SqlSession的。
+
+二级缓存是多个SqlSession共享的，其作用域是mapper的同一个namespace，不同的sqlSession多次执行相同namespace下的sql语句，且向sql中传递参数也相同（即执行相同的sql语句）时，第一次执行完毕会将查询到的数据写入缓存（内存），下次会从缓存中获取数据将不再从数据库查询，从而提高查询效率。
+
+Mybatis默认没有开启二级缓存，需要在setting全局参数中配置开启二级缓存。
+
+二级缓存需要pojo对象实现java.io.Serializable接口实现序列化和反序列化操作。
